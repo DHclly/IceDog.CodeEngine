@@ -1,0 +1,33 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.12.35521.163 d17.12
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IceDog.CodeEngine.Javascript.Jint.Cmd", "IceDog.CodeEngine.Javascript.Jint.Cmd\IceDog.CodeEngine.Javascript.Jint.Cmd.csproj", "{5E483D2A-574C-4387-8BCE-42E971840865}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CodeEngines", "CodeEngines", "{6FE85E7F-597B-46B4-918C-C021273297E5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IceDog.CodeEngine.Javascript.JintEngine", "CodeEngines\IceDog.CodeEngine.Javascript.JintEngine\IceDog.CodeEngine.Javascript.JintEngine.csproj", "{B189E3E2-074F-4313-A96B-956B801519A9}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5E483D2A-574C-4387-8BCE-42E971840865}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5E483D2A-574C-4387-8BCE-42E971840865}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5E483D2A-574C-4387-8BCE-42E971840865}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5E483D2A-574C-4387-8BCE-42E971840865}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B189E3E2-074F-4313-A96B-956B801519A9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B189E3E2-074F-4313-A96B-956B801519A9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B189E3E2-074F-4313-A96B-956B801519A9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B189E3E2-074F-4313-A96B-956B801519A9}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{B189E3E2-074F-4313-A96B-956B801519A9} = {6FE85E7F-597B-46B4-918C-C021273297E5}
+	EndGlobalSection
+EndGlobal
