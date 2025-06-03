@@ -68,7 +68,6 @@ public class CodeEngineJintProvider
             options.MaxJsonParseDepth(32);
             options.MaxArraySize(10_000_000);
         });
-
         this.AddDotNetHookMethod();
         this.AddJavascriptModule();
     }
