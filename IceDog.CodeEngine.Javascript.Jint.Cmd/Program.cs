@@ -15,13 +15,17 @@ namespace IceDog.CodeEngine.Javascript.Jint.Cmd
             var engine = CodeEngineJintProvider.CreateInstance();
             var code = """
                 import logger from 'logger';
-
                 export async function handler({input,context}){
                     logger.log("info","hello world");
                     logger.log("info",`input:${JSON.stringify(input)}`);
                     logger.log("info",`input:${input.name}`);
                     logger.log("info",`input:${input.age}`);
+                    logger.log("info",`input:${input.list}`);
+                    logger.log("info",`input:${input.dict.aa}`);
                     logger.log("info",`context:${JSON.stringify(context)}`);
+                    input.ff=51;
+                    input.f3=123;
+                    input.gg=51.2551;
                     return input;
                 }
                 """;
@@ -29,10 +33,18 @@ namespace IceDog.CodeEngine.Javascript.Jint.Cmd
             {
                 ["name"] = "Tim",
                 ["age"] = 25,
+                ["list"] = Enumerable.Range(3, 9).ToArray(),
+                ["dict"] = new Dictionary<string, object>()
+                {
+                    ["aa"] = Enumerable.Repeat(5, 5).ToArray(),
+                    ["bb"] = "vvvvvvvv"
+                }
             };
-
             var result = engine.ExecuteCode(code, codeParams);
-            Console.WriteLine(JsonSerializer.Serialize(result));
+            if (result is not null)
+            {
+                Console.WriteLine(JsonSerializer.Serialize(result));
+            }
         }
     }
 }
