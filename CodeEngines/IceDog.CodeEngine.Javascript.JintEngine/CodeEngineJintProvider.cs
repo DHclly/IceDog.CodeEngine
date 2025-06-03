@@ -1,9 +1,5 @@
 ﻿using Jint;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace IceDog.CodeEngine.Javascript.JintEngine;
 
@@ -27,6 +23,8 @@ public class CodeEngineJintProvider
     /// </summary>
     private CodeEngineJintConfig _codeEngineConfig;
 
+    private object _executeCodeLock = new();
+
     /// <summary>
     /// 
     /// </summary>
@@ -46,7 +44,20 @@ public class CodeEngineJintProvider
         {
             _codeEngineConfig = codeEngineConfig;
         }
+    }
 
+    /// <summary>
+    /// 采用模块导入形式，由于模块只能导入一次，所以实例只能用一次
+    /// </summary>
+    /// <param name="codeEngineConfig"></param>
+    /// <returns></returns>
+    public static CodeEngineJintProvider CreateInstance(CodeEngineJintConfig? codeEngineConfig = null) => new CodeEngineJintProvider(codeEngineConfig);
+
+    /// <summary>
+    /// 
+    /// </summary>
+    private void InitCodeEngine()
+    {
         _codeEngine = new Engine(options =>
         {
             options.LimitMemory(1_000_000_000);
@@ -58,24 +69,20 @@ public class CodeEngineJintProvider
             options.MaxArraySize(10_000_000);
         });
 
-        this.InitCodeEngine();
-    }
-
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="codeEngineConfig"></param>
-    /// <returns></returns>
-    public static CodeEngineJintProvider CreateInstance(CodeEngineJintConfig? codeEngineConfig = null) => new CodeEngineJintProvider(codeEngineConfig);
-
-    /// <summary>
-    /// 
-    /// </summary>
-    private void InitCodeEngine()
-    {
         this.AddDotNetHookMethod();
         this.AddJavascriptModule();
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    private void DestoryCodeEngine()
+    {
+        if (_codeEngine is not null)
+        {
+            _codeEngine.Dispose();
+            _codeEngine = null;
+        }
     }
 
     /// <summary>
@@ -215,7 +222,7 @@ public class CodeEngineJintProvider
         let input = __dotnet_input_params;
         export const result = handler({input,context});
         """);
-            }
+    }
 
     /// <summary>
     /// 
@@ -225,10 +232,21 @@ public class CodeEngineJintProvider
     /// <returns></returns>
     public dynamic ExecuteCode(string code, Dictionary<string, object> codeParams)
     {
-        _codeEngine.SetValue("__dotnet_input_params", codeParams);
-        _codeEngine.Modules.Add("handler", code);
-        var fnMain = _codeEngine.Modules.Import("main");
-        var result = fnMain.Get("result").UnwrapIfPromise().ToObject();
-        return result;
+        lock (_executeCodeLock)
+        {
+            try
+            {
+                this.InitCodeEngine();
+                _codeEngine.SetValue("__dotnet_input_params", codeParams);
+                _codeEngine.Modules.Add("handler", code);
+                var fnMain = _codeEngine.Modules.Import("main");
+                var result = fnMain.Get("result").UnwrapIfPromise().ToObject();
+                return result;
+            }
+            finally
+            {
+                this.DestoryCodeEngine();
+            }
+        }
     }
 }
