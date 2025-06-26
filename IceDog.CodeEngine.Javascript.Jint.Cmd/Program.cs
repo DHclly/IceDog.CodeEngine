@@ -21,11 +21,13 @@ namespace IceDog.CodeEngine.Javascript.Jint.Cmd
                     logger.log("info",`input:${input.name}`);
                     logger.log("info",`input:${input.age}`);
                     logger.log("info",`input:${input.list}`);
-                    logger.log("info",`input:${input.dict.aa}`);
+                    logger.log("info",`input:${input.dict.key1}`);
                     logger.log("info",`context:${JSON.stringify(context)}`);
-                    input.ff=51;
-                    input.f3=123;
-                    input.gg=51.2551;
+
+                    input.num1=51;
+                    input.num2=123;
+                    input.num3=51.2551;
+
                     return input;
                 }
                 """;
@@ -36,14 +38,23 @@ namespace IceDog.CodeEngine.Javascript.Jint.Cmd
                 ["list"] = Enumerable.Range(3, 9).ToArray(),
                 ["dict"] = new Dictionary<string, object>()
                 {
-                    ["aa"] = Enumerable.Repeat(5, 5).ToArray(),
-                    ["bb"] = "vvvvvvvv"
+                    ["key1"] = Enumerable.Repeat(5, 5).ToArray(),
+                    ["key2"] = "vvvvvvvv"
                 }
             };
+            Console.WriteLine("-------------------");
             var result = engine.ExecuteCode(code, codeParams);
+            Console.WriteLine("-------------------");
             if (result is not null)
             {
-                Console.WriteLine(JsonSerializer.Serialize(result));
+                Console.WriteLine("执行结果："+JsonSerializer.Serialize(result));
+            }
+            Console.WriteLine("-------------------");
+            result = engine.ExecuteCode(code, codeParams);
+            Console.WriteLine("-------------------");
+            if (result is not null)
+            {
+                Console.WriteLine("执行结果：" + JsonSerializer.Serialize(result));
             }
         }
     }
