@@ -4,7 +4,7 @@ using System.Text;
 namespace IceDog.CodeEngine.Javascript.JintEngine;
 
 /// <summary>
-/// 
+/// 代码引擎供应商
 /// </summary>
 public class CodeEngineJintProvider
 {
@@ -16,14 +16,7 @@ public class CodeEngineJintProvider
     /// <summary>
     /// 
     /// </summary>
-    private Engine _codeEngine;
-
-    /// <summary>
-    /// 
-    /// </summary>
     private CodeEngineJintConfig _codeEngineConfig;
-
-    private object _executeCodeLock = new();
 
     /// <summary>
     /// 
@@ -47,7 +40,7 @@ public class CodeEngineJintProvider
     }
 
     /// <summary>
-    /// 采用模块导入形式，由于模块只能导入一次，所以实例只能用一次
+    /// 创建代码引擎供应商实例
     /// </summary>
     /// <param name="codeEngineConfig"></param>
     /// <returns></returns>
@@ -56,9 +49,9 @@ public class CodeEngineJintProvider
     /// <summary>
     /// 
     /// </summary>
-    private void InitCodeEngine()
+    private Engine CreateCodeEngine()
     {
-        _codeEngine = new Engine(options =>
+        var codeEngine = new Engine(options =>
         {
             options.LimitMemory(1_000_000_000);
             options.LimitRecursion(2_000);
@@ -68,33 +61,35 @@ public class CodeEngineJintProvider
             options.MaxJsonParseDepth(32);
             options.MaxArraySize(10_000_000);
         });
-        this.AddDotNetHookMethod();
-        this.AddJavascriptModule();
+        this.AddDotNetHookMethod(codeEngine);
+        this.AddJavascriptModule(codeEngine);
+
+        return codeEngine;
     }
 
     /// <summary>
     /// 
     /// </summary>
-    private void DestoryCodeEngine()
+    private void DestoryCodeEngine(Engine? codeEngine)
     {
-        if (_codeEngine is not null)
+        if (codeEngine is not null)
         {
-            _codeEngine.Dispose();
-            _codeEngine = null;
+            codeEngine.Dispose();
+            codeEngine = null;
         }
     }
 
     /// <summary>
     /// 
     /// </summary>
-    private void AddDotNetHookMethod()
+    private void AddDotNetHookMethod(Engine codeEngine)
     {
-        _codeEngine.SetValue("__dotnet_log", new Action<string, string>((logType, message) =>
+        codeEngine.SetValue("__dotnet_log", new Action<string, string>((logType, message) =>
         {
             Console.WriteLine($"[{logType}]:{message}");
         }));
 
-        _codeEngine.SetValue("__dotnet_http_get", new Func<string, Task<string>>(async (url) =>
+        codeEngine.SetValue("__dotnet_http_get", new Func<string, Task<string>>(async (url) =>
         {
             try
             {
@@ -109,7 +104,7 @@ public class CodeEngineJintProvider
             }
         }));
 
-        _codeEngine.SetValue("__dotnet_http_post", new Func<string, string, string, object, Task<string>>(async (url, data, contentType, headers) =>
+        codeEngine.SetValue("__dotnet_http_post", new Func<string, string, string, object, Task<string>>(async (url, data, contentType, headers) =>
         {
             try
             {
@@ -173,9 +168,9 @@ public class CodeEngineJintProvider
     /// <summary>
     /// 
     /// </summary>
-    private void AddJavascriptModule()
+    private void AddJavascriptModule(Engine codeEngine)
     {
-        _codeEngine.Modules.Add("logger", """
+        codeEngine.Modules.Add("logger", """
         const log=__dotnet_log;
         const debug=(message)=>__dotnet_log(`debug`,message);
         const info=(message)=>__dotnet_log(`info`,message);
@@ -192,7 +187,7 @@ public class CodeEngineJintProvider
         export default logger;
         """);
 
-        _codeEngine.Modules.Add("fetch", """
+        codeEngine.Modules.Add("fetch", """
         const get = async (url) => {
             return await __dotnet_http_get(url);
         };
@@ -209,12 +204,12 @@ public class CodeEngineJintProvider
         export default fetch;
         """);
 
-        _codeEngine.Modules.Add("context", """      
+        codeEngine.Modules.Add("context", """      
         const context = {};
         export default context;
         """);
 
-        _codeEngine.Modules.Add("main", """
+        codeEngine.Modules.Add("main", """
         import context from 'context';
         import {handler} from 'handler';
         
@@ -231,21 +226,20 @@ public class CodeEngineJintProvider
     /// <returns></returns>
     public dynamic ExecuteCode(string code, Dictionary<string, object> codeParams)
     {
-        lock (_executeCodeLock)
+        Engine? codeEngine = null;
+        try
         {
-            try
-            {
-                this.InitCodeEngine();
-                _codeEngine.SetValue("__dotnet_input_params", codeParams);
-                _codeEngine.Modules.Add("handler", code);
-                var fnMain = _codeEngine.Modules.Import("main");
-                var result = fnMain.Get("result").UnwrapIfPromise().ToObject();
-                return result;
-            }
-            finally
-            {
-                this.DestoryCodeEngine();
-            }
+            codeEngine = this.CreateCodeEngine();
+            codeEngine.SetValue("__dotnet_input_params", codeParams);
+            codeEngine.Modules.Add("handler", code);
+            var fnMain = codeEngine.Modules.Import("main");
+            var result = fnMain.Get("result").UnwrapIfPromise().ToObject();
+            return result;
+        }
+        catch (Exception) { throw; }
+        finally
+        {
+            this.DestoryCodeEngine(codeEngine);
         }
     }
 }
