@@ -20,8 +20,8 @@ namespace IceDog.CodeEngine.Javascript.Jint.Cmd
                     logger.log("info",`input:${JSON.stringify(input)}`);
                     logger.log("info",`input:${input.name}`);
                     logger.log("info",`input:${input.age}`);
-                    logger.log("info",`input:${input.list}`);
-                    logger.log("info",`input:${input.dict.key1}`);
+                    logger.log("info",`input:list:${input.list}`);
+                    logger.log("info",`input:dict:${input.dict.key1}`);
                     logger.log("info",`context:${JSON.stringify(context)}`);
 
                     input.num1=51;
@@ -35,10 +35,10 @@ namespace IceDog.CodeEngine.Javascript.Jint.Cmd
             {
                 ["name"] = "Tim",
                 ["age"] = 25,
-                ["list"] = Enumerable.Range(3, 9).ToArray(),
+                ["list"] = Enumerable.Range(3, 9).ToList(),
                 ["dict"] = new Dictionary<string, object>()
                 {
-                    ["key1"] = Enumerable.Repeat(5, 5).ToArray(),
+                    ["key1"] = Enumerable.Repeat(5, 5),
                     ["key2"] = "vvvvvvvv"
                 }
             };

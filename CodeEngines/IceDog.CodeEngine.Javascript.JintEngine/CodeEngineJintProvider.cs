@@ -1,5 +1,6 @@
 ﻿using Jint;
 using System.Text;
+using System.Text.Json;
 
 namespace IceDog.CodeEngine.Javascript.JintEngine;
 
@@ -213,7 +214,7 @@ public class CodeEngineJintProvider
         import context from 'context';
         import {handler} from 'handler';
         
-        let input = __dotnet_input_params;
+        let input = JSON.parse(__dotnet_input_params);
         export const result = handler({input,context});
         """);
     }
@@ -230,7 +231,7 @@ public class CodeEngineJintProvider
         try
         {
             codeEngine = this.CreateCodeEngine();
-            codeEngine.SetValue("__dotnet_input_params", codeParams);
+            codeEngine.SetValue("__dotnet_input_params", JsonSerializer.Serialize(codeParams));
             codeEngine.Modules.Add("handler", code);
             var fnMain = codeEngine.Modules.Import("main");
             var result = fnMain.Get("result").UnwrapIfPromise().ToObject();
